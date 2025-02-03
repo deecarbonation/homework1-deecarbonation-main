@@ -103,10 +103,13 @@ export class File implements FileHandle{
   }
 
   open(num: number) {
-    if (this.mode == 1)
+
+    this.mode = num;
+
+    if (this.mode == 1) //if in write mode, clear;
       this.clear(); 
 
-    if (this.mode == 4 || this.mode == 8 || this.mode == 16) 
+    if (this.mode == 4 || this.mode == 8 || this.mode == 16) //if in any append mode, adjust pos to EOF
       this.pos = this.data.length;
     else 
       this.pos = 0;
