@@ -50,14 +50,15 @@ export class File implements FileHandle{
   }
 
   read(num: number): Uint8Array {
-    if(this.data.byteLength < num) 
-      throw new EOFError ("Cannot read past file byte size");
+ 
+    if (this.pos >= this.data.length) 
+      throw new EOFError("Cannot read past end of file.");
     
-    const bytes2Read = Math.min(num, this.data.length - this.pos);
-    const result = this.data.slice(this.pos, this.pos + bytes2Read);
-    this.pos += bytes2Read; //adjusts position in array;
+    const bytesToRead = Math.min(num, this.data.length - this.pos);
+    const result = this.data.slice(this.pos, this.pos + bytesToRead);
+    this.pos += bytesToRead;
     return result;
-  }
+}
 
   write(data: Uint8Array): void {
     if (this.mode == FileMode.Read)
