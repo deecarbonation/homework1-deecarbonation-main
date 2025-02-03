@@ -26,10 +26,64 @@ ReadWriteAppend = 1 << 4
 
 // TODO: FileHandle
 export interface FileHandle {
-  read : number;
-  
-  write : Uint8Array;
-  seek : number;
+  read(num: number): Uint8Array; //read at most given number of bytes from file. Throw EOFError if no bytes are left. Returns Uint8Array of bytes read.
+
+  write(array: Uint8Array): void; //writes all bytes in array to file;
+
+  truncate(): void; //ends file at current point. only allowed in "write" mode.
+
+  seek(num: number): void; // moves point where reading/writing to the point given within file. throw RangeError if number is negative or beyond file end.
 }
 
+export class File implements FileHandle{
+
+  private data : Uint8Array;
+  private mode : FileMode;
+  private pos : number;
+
+  constructor() {
+    this.data = new Uint8Array(0);
+    this.pos = 0;
+    this.mode = FileMode.Read;
+  }
+
+  read(arg: number): Uint8Array {
+    throw new Error("Method not implemented.");
+  }
+  write(arg: Uint8Array): void {
+    throw new Error("Method not implemented.");
+  }
+  truncate(arg: File): void {
+   throw new Error("Method not implemented.");
+  }
+  seek(arg: number): void {
+    throw new Error("Method not implemented.");
+  }
+
+  getLength(){
+    return this.data.length;
+  }
+
+  setLength(arg: number) {
+    if (arg < 0)
+      return new RangeError, "length cannot be negative";
+
+
+    
+
+
+  }
+
+  clear(){
+
+  }
+
+  open(arg: number) {
+
+
+    return new File;
+  }
+
+
+}
 // TODO: File
