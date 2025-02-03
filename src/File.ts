@@ -1,3 +1,4 @@
+// EOFError (End of File) Error for end of file condition
 export class EOFError extends Error {
     constructor(message : string) {
       super(message);
@@ -6,7 +7,7 @@ export class EOFError extends Error {
     }
 }
 
-// IllegalStateError
+// IllegalStateError to handle iilegal mode i.e. truncating in a non write mode
 export class IllegalStateError extends Error {
     constructor(message : string) {
       super(message); //sends 'message' to the parent Error constructor
@@ -14,7 +15,8 @@ export class IllegalStateError extends Error {
       this.name = 'IllegalStateError';
     }
 }
-// FileMode
+
+// Enum representing different file open modes using bitwise flags to shorten typing
 export enum FileMode {
 Read = 0,       // 0
 Write = 1 << 0,     //1
@@ -23,34 +25,46 @@ Append = 1 << 2,      //4
 WriteAppend = 1 << 3,    //8
 ReadWriteAppend = 1 << 4   //16
 } //how is bitwise manipulation important to the solution i.e. 1 << 2
-  //answer: ohhhhh it lets you type the decimal of the assigned binary number?
+  //answer: ohhhhh it lets you type the decimal of the assigned binary number
   
-// FileHandle
+
+  /*
+  reads up to the specified number of bytes from the file
+  throws an EOFError if no bytes are left to read
+  param num The number of bytes to read
+  returns a Uint8Array of the bytes read
+   */
 export interface FileHandle {
-  read(num: number): Uint8Array; //read at most given number of bytes from file. Throw EOFError if no bytes are left. Returns Uint8Array of bytes read.
-
-  write(data: Uint8Array): void; //writes all bytes in array to file;
-
-  truncate(): void; //ends file at current point. only allowed in "write" mode.
-
-  seek(num: number): void; // moves point where reading/writing to the point given within file. throw RangeError if number is negative or beyond file end.
+  read(num: number): Uint8Array; 
+  write(data: Uint8Array): void; 
+  truncate(): void; 
+  seek(num: number): void; 
 }
 
-// TODO: File
+//Class that implements FileHandle while supporting read, write, and append operations on files
 export class File implements FileHandle{
 
-  private data : Uint8Array;
-  private mode : FileMode;
-  private pos : number;
+  private data : Uint8Array; //stores file data
+  private mode : FileMode; //current file mode
+  private pos : number; //current position within file
 
+  //constructs new empty file object; empty and in read mode
   constructor() {
     this.data = new Uint8Array(0);
     this.pos = 0;
-    this.mode = FileMode.Read;
+    this.mode = FileMode.Read; //read by default
   }
 
+  /*
+  reads up to num bytes from file starting at pos
+  param num is the number of bytes to read
+  returns a Unit8Array containing bytes read
+  thorws RangeError if num is negative
+  throws EOFError if pos exceeds bounds
+  */
   read(num: number): Uint8Array {
- 
+    if (num < 0)
+      throw new RangeError("Cannot read out of bounds");
     if (this.pos >= this.data.length) 
       throw new EOFError("Cannot read past end of file.");
     
@@ -59,7 +73,11 @@ export class File implements FileHandle{
     this.pos += bytesToRead;
     return result;
 }
-
+  /*
+  writes specified data to file at pos
+  param data is the data to write to file
+  throws IllegalStateError if file is in read only mode
+  */
   write(data: Uint8Array): void {
     if (this.mode == FileMode.Read)
       throw new IllegalStateError("Cannot write while in read mode");
@@ -70,15 +88,23 @@ export class File implements FileHandle{
     this.data = data3;
     this.pos += data.length;
   }
-
+  /*
+  truncates files to current pos
+  only allowed in write mode
+  throws IllegalStateError if not in a write mode
+  */
   truncate(): void {
    if (this.mode == 0 || this.mode == 4)
     throw new IllegalStateError("Can only truncate in a write mode");
    else
     this.setLength(this.pos);
-
   }
 
+  /*
+  moves pos within file to num
+  param num is the pos to seek to
+  throws RangeError if pos is invalid
+  */
   seek(num: number): void {
     if (num > this.getLength() || num < 0)
       throw new RangeError("Cannot seek outside of file bounds");
@@ -86,10 +112,18 @@ export class File implements FileHandle{
       this.pos = num;
   }
 
+  //returns length of file in bytes
   getLength(){
     return this.data.length;
   }
-
+  
+  /*
+  sets length of file to specified alue
+  if length is increased, new bytes are padded
+  if length is decreased, excess data is thrown out
+  param num is new file length
+  throws RangeError if num is negative
+  */
   setLength(num: number) {
     if (num < 0)
       throw new RangeError ("length cannot be negative"); //duh
@@ -99,10 +133,17 @@ export class File implements FileHandle{
     this.data = data2;
   }
 
+  //clears file contents by setting length to 0
   clear(){
     this.setLength(0);
   }
 
+  /*
+  opens file in specified mode
+  param num is bitwise flag of mode that is compared to if statements to match conditions
+  of each file mode
+  returns itself 
+  */
   open(num: number) {
 
     this.mode = num;
