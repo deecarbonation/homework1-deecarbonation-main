@@ -58,12 +58,14 @@ export class File implements FileHandle{
     this.pos += bytes2Read; //adjusts position in array;
     return result;
   }
+
   write(data: Uint8Array): void {
     if (this.mode == FileMode.Read)
       throw new IllegalStateError("Cannot write while in read mode");
 
     const data3 = new Uint8Array(this.data.length + data.length)
   }
+
   truncate(): void {
    if (this.mode != FileMode.Write && this.mode != FileMode.WriteAppend)
     throw new IllegalStateError("Can only truncate in write mode");
@@ -71,6 +73,7 @@ export class File implements FileHandle{
     this.setLength(this.pos);
 
   }
+  
   seek(num: number): void {
     if (num > this.getLength() || num < 0)
       throw new RangeError("Cannot seek outside of file bounds");
